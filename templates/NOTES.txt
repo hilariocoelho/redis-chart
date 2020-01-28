@@ -1,0 +1,16 @@
+Redis instance has been successfully deployed!
+
+1. Grab redis password by running:
+kubectl get secret {{ template "redis.fullname" . }} -n {{ .Release.Namespace }} -o jsonpath="{.data.redis-password}" | base64 --decode; echo
+
+2. You can access redis server on the following DNS name from within your cluster:
+{{ template "redis.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}
+
+3. You can access redis server with a redis cli client with the following command:
+redis-cli -h {{ template "redis.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local -p {{ .Values.service.port }} -a <REDIS PASSWORD>
+
+4. You can access redis server within a container deployed on your cluster with the following command:
+kubectl run redis --rm --tty -i --restart='Never' --image={{ template "redis.image" . }} -- bash -c "redis-cli -h {{ template "redis.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local -p {{ .Values.service.port }} -a `kubectl get secret {{ template "redis.fullname" . }} -n {{ .Release.Namespace }} -o jsonpath="{.data.redis-password}" | base64 --decode; echo`"
+
+5. In order to delete all persisted data run:
+kubectl delete pvc/data-{{ template "redis.fullname" . }}-master-0 -n {{ .Release.Namespace }}

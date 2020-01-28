@@ -1,0 +1,27 @@
+image:
+  arm: true
+  armImage: arm32v7/redis:5.0.7
+  x86Image: redis:5.0.7
+  pullPolicy: IfNotPresent
+
+resources:
+  limits:
+    cpu: 50m
+    memory: 300Mi
+
+service:
+  type: ClusterIP
+  port: 6379
+
+redis:
+  port: 6379
+  # Define a password to use on the redis server or 20 alphanumeric character one will be randomly generated
+  #password: ""
+  persistence:
+    enabled: true
+    storageClassName: ""
+  saves:
+    - seconds: 900
+      threshold: 10
+    - seconds: 30
+      threshold: 3

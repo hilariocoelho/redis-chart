@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ template "redis.fullname" . }}-master
+spec:
+  selector:
+    matchLabels: {{- include "redis.selectorLabels" . | nindent 6 }}
+  serviceName: {{ template "redis.fullname" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "redis.fullname" . }}
+        chart: {{ template "redis.chart" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ template "redis.fullname" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          image: {{ template "redis.image" . }}
+          resources: {{ toYaml .Values.resources | nindent 12 }}
+          ports:
+            - containerPort: {{ .Values.redis.port }}
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "redis.fullname" . }}
+                  key: redis-password
+          {{ if .Values.redis.persistence }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          {{ end }}
+          command:
+            - /bin/bash
+            - -c
+            - redis-server --requirepass ${REDIS_PASSWORD} --masterauth ${REDIS_PASSWORD} --port {{ .Values.redis.port }} {{ if .Values.redis.persistence.enabled }}--appendonly yes {{ range .Values.redis.saves }}--save {{ .seconds }} {{ .threshold }} {{ end }}{{ end }}
+  {{ if .Values.redis.persistence.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 500Mi
+      storageClassName: {{ .Values.redis.persistence.storageClassName }}
+  {{ end }}

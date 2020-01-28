@@ -1,0 +1,14 @@
+apiVersion: v2
+name: redis
+description: A Helm chart for Redis supporting x86 and arm CPU architectures
+type: application
+version: 1.0.0
+appVersion: 1.0.0
+keywords:
+  - redis
+  - arm
+  - raspberry
+  - rpi
+maintainers:
+  - name: spawn2kill
+    email: hilariodpcoelho@hotmail.com
